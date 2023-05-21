@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import logging
 import os
+from asyncio import Semaphore, sleep
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 
@@ -14,17 +15,25 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+limit = Semaphore(3)
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Max bro ya bota napisal")
+    async with limit:
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="Max bro ya bota napisal")
+        await sleep(4)
 
 
 async def meme_photo_sender(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_photo(chat_id=CHAT_ID, photo=update.message.photo[-1])
+    async with limit:
+        await context.bot.send_photo(chat_id=CHAT_ID, photo=update.message.photo[-1])
+        await sleep(4)
 
 
 async def meme_video_sender(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_video(chat_id=CHAT_ID, video=update.message.video)
+    async with limit:
+        await context.bot.send_video(chat_id=CHAT_ID, video=update.message.video)
+        await sleep(4)
 
 
 if __name__ == "__main__":
