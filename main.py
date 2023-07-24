@@ -3,7 +3,14 @@ import logging
 import os
 from asyncio import Semaphore, sleep
 from telegram import Update
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
+from telegram.ext import (
+    ApplicationBuilder,
+    BasePersistence,
+    ContextTypes,
+    CommandHandler,
+    filters,
+    MessageHandler,
+    PicklePersistence)
 
 
 load_dotenv()
@@ -19,6 +26,7 @@ limit = Semaphore(3)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     async with limit:
         await context.bot.send_message(chat_id=update.effective_chat.id, text="Max bro ya bota napisal")
         await sleep(4)
@@ -37,7 +45,8 @@ async def meme_video_sender(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 if __name__ == "__main__":
-    application = ApplicationBuilder().token(BOT_API).build()
+    meme_bot_persistence = PicklePersistence(filepath="memebot")
+    application = ApplicationBuilder().token(BOT_API).persistence(meme_bot_persistence).build()
 
     start_handler = CommandHandler("start", start)
     memas_photo_handler = MessageHandler(
